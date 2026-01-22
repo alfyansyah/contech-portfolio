@@ -46,7 +46,7 @@ export default async function Home() {
           </div>
 
           <a 
-            href="https://wa.me/6281234567890" 
+            href="https://wa.me/6282280307626" 
             target="_blank"
             className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all"
           >
@@ -55,9 +55,8 @@ export default async function Home() {
         </div>
       </nav>
 
-      {/* 2. HERO SECTION (Wibawa Perusahaan) */}
+      {/* 2. HERO SECTION */}
       <section className="relative py-24 px-4 overflow-hidden">
-        {/* Background Pattern */}
         <div className="absolute inset-0 -z-10 bg-[radial-gradient(#e5e7eb_1px,transparent_1px)] [background-size:16px_16px] opacity-30"></div>
         
         <div className="max-w-5xl mx-auto text-center">
@@ -96,7 +95,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 3. SERVICES SECTION (Menu Jualan) - BARU */}
+      {/* 3. SERVICES SECTION */}
       <section id="services" className="py-24 px-4 bg-slate-50 border-y border-slate-200">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
@@ -105,7 +104,6 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Card 1 */}
             <div className="bg-white p-8 rounded-2xl border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all group">
               <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors">
                 <LayoutDashboard className="w-7 h-7 text-blue-600 group-hover:text-white" />
@@ -116,7 +114,6 @@ export default async function Home() {
               </p>
             </div>
 
-            {/* Card 2 */}
             <div className="bg-white p-8 rounded-2xl border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all group">
               <div className="w-14 h-14 bg-orange-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-orange-600 transition-colors">
                 <Smartphone className="w-7 h-7 text-orange-600 group-hover:text-white" />
@@ -127,7 +124,6 @@ export default async function Home() {
               </p>
             </div>
 
-            {/* Card 3 */}
             <div className="bg-white p-8 rounded-2xl border border-slate-200 hover:border-orange-500 hover:shadow-xl transition-all group">
               <div className="w-14 h-14 bg-purple-50 rounded-xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition-colors">
                 <Bot className="w-7 h-7 text-purple-600 group-hover:text-white" />
@@ -141,7 +137,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 4. PORTFOLIO SECTION (Existing Data) */}
+      {/* 4. PORTFOLIO SECTION */}
       <section id="portfolio" className="py-24 px-4 bg-white">
         <div className="max-w-7xl mx-auto">
           <div className="flex items-end justify-between mb-12">
@@ -155,7 +151,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {tools.map((tool) => (
+            {tools.map((tool: any) => (
               <div key={tool.id} className="group bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-all">
                 <div className="p-8">
                   <div className="flex justify-between items-start mb-6">
@@ -172,12 +168,12 @@ export default async function Home() {
                   <p className="text-slate-600 text-sm mb-6 h-10 line-clamp-2">{tool.description}</p>
                   
                   <div className="flex flex-wrap gap-2 mb-6">
-                    {/* Memecah string tech_stack jika dipisah koma, atau menampilkan raw */}
-                    {tool.tech_stack?.split(',').map((tech, i) => (
+                    {/* FIX ERROR TYPE: Menambahkan tipe (tech: string, i: number) */}
+                    {tool.tech_stack ? tool.tech_stack.split(',').map((tech: string, i: number) => (
                       <span key={i} className="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-mono text-slate-500">
                         {tech.trim()}
                       </span>
-                    ))}
+                    )) : null}
                   </div>
 
                   {tool.demo_url ? (
@@ -193,7 +189,6 @@ export default async function Home() {
               </div>
             ))}
             
-            {/* Empty State */}
             {tools.length === 0 && (
               <div className="col-span-full py-12 text-center text-slate-400 border-2 border-dashed border-slate-200 rounded-xl">
                 Belum ada data aplikasi.
@@ -203,9 +198,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 5. WHY US / TRUST SECTION - BARU */}
+      {/* 5. WHY US SECTION */}
       <section id="why-us" className="py-24 px-4 bg-slate-900 text-white relative overflow-hidden">
-        {/* Decorative Blob */}
         <div className="absolute top-0 right-0 -mr-20 -mt-20 w-96 h-96 bg-orange-600 rounded-full blur-3xl opacity-20"></div>
 
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-center relative z-10">
@@ -256,7 +250,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* 6. FOOTER PROFESIONAL - BARU */}
+      {/* 6. FOOTER */}
       <footer className="bg-white border-t border-slate-200 pt-16 pb-8 px-4">
         <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           <div className="col-span-1 md:col-span-2">
