@@ -5,6 +5,10 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 
+// --- KODE SAKTI (TAMBAHAN BARU) ---
+// Ini memaksa website untuk selalu mengambil data terbaru dari Supabase (0 detik cache)
+export const revalidate = 0;
+
 // --- BAGIAN DATA (SERVER SIDE) ---
 async function getTools() {
   const { data, error } = await supabase
@@ -152,8 +156,8 @@ export default async function Home() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {tools.map((tool: any) => (
-              <div key={tool.id} className="group bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-all">
-                <div className="p-8">
+              <div key={tool.id} className="group bg-slate-50 rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-all flex flex-col h-full">
+                <div className="p-8 flex flex-col h-full">
                   <div className="flex justify-between items-start mb-6">
                     <div className="p-3 bg-white rounded-lg border border-slate-200 shadow-sm">
                       <Terminal className="w-6 h-6 text-slate-700" />
@@ -165,10 +169,9 @@ export default async function Home() {
                     </span>
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">{tool.name}</h3>
-                  <p className="text-slate-600 text-sm mb-6 h-10 line-clamp-2">{tool.description}</p>
+                  <p className="text-slate-600 text-sm mb-6 line-clamp-2">{tool.description}</p>
                   
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {/* FIX ERROR TYPE: Menambahkan tipe (tech: string, i: number) */}
+                  <div className="flex flex-wrap gap-2 mb-6 mt-auto">
                     {tool.tech_stack ? tool.tech_stack.split(',').map((tech: string, i: number) => (
                       <span key={i} className="px-2 py-1 bg-white border border-slate-200 rounded text-[10px] font-mono text-slate-500">
                         {tech.trim()}
@@ -177,11 +180,11 @@ export default async function Home() {
                   </div>
 
                   {tool.demo_url ? (
-                    <Link href={tool.demo_url} className="w-full flex items-center justify-center py-3 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-orange-600 transition-colors">
+                    <Link href={tool.demo_url} target="_blank" className="w-full flex items-center justify-center py-3 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-orange-600 transition-colors mt-auto">
                       Coba Demo Live
                     </Link>
                   ) : (
-                    <button disabled className="w-full py-3 rounded-xl bg-slate-200 text-slate-400 text-sm font-bold cursor-not-allowed">
+                    <button disabled className="w-full py-3 rounded-xl bg-slate-200 text-slate-400 text-sm font-bold cursor-not-allowed mt-auto">
                       Dalam Pengembangan
                     </button>
                   )}
