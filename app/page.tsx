@@ -1,15 +1,12 @@
 import { supabase } from '@/lib/supabase';
 import { 
   Terminal, Database, Cpu, ArrowRight, MessageCircle, 
-  LayoutDashboard, Bot, Smartphone, CheckCircle2, Building2 
+  LayoutDashboard, Bot, Smartphone, CheckCircle2, Building2, UserCircle 
 } from 'lucide-react';
 import Link from 'next/link';
 
-// --- KODE SAKTI (TAMBAHAN BARU) ---
-// Ini memaksa website untuk selalu mengambil data terbaru dari Supabase (0 detik cache)
 export const revalidate = 0;
 
-// --- BAGIAN DATA (SERVER SIDE) ---
 async function getTools() {
   const { data, error } = await supabase
     .from('saas_tools')
@@ -23,14 +20,13 @@ async function getTools() {
   return data || [];
 }
 
-// --- HALAMAN UTAMA ---
 export default async function Home() {
   const tools = await getTools();
 
   return (
     <main className="min-h-screen bg-white text-slate-900 font-sans selection:bg-orange-100 selection:text-orange-900">
       
-      {/* 1. NAVBAR (Sticky & Glass Effect) */}
+      {/* 1. NAVBAR UPDATE: Ada tombol Login */}
       <nav className="border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -49,13 +45,24 @@ export default async function Home() {
             <a href="#why-us" className="hover:text-orange-600 transition-colors">Keunggulan</a>
           </div>
 
-          <a 
-            href="https://wa.me/6282280307626" 
-            target="_blank"
-            className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all"
-          >
-            Hubungi Kami <ArrowRight className="w-4 h-4" />
-          </a>
+          <div className="flex items-center gap-3">
+             {/* Tombol Login Baru */}
+             <Link 
+              href="/auth" 
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full border border-slate-300 text-slate-700 text-sm font-bold hover:border-orange-600 hover:text-orange-600 transition-all"
+            >
+              <UserCircle className="w-4 h-4" /> Login
+            </Link>
+            
+            <a 
+                href="https://wa.me/6282280307626" 
+                target="_blank"
+                className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-full bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition-all"
+            >
+                Hubungi Kami
+            </a>
+          </div>
+
         </div>
       </nav>
 
@@ -81,14 +88,13 @@ export default async function Home() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <a 
-              href="https://wa.me/6281234567890?text=Halo,%20saya%20tertarik%20diskusi%20tentang%20sistem%20konstruksi" 
-              target="_blank"
+            <Link 
+              href="/calculator" 
               className="w-full sm:w-auto px-8 py-4 rounded-xl bg-orange-600 text-white font-bold hover:bg-orange-700 shadow-xl shadow-orange-200 hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
             >
-              <MessageCircle className="w-5 h-5" />
-              Konsultasi Gratis
-            </a>
+              <Smartphone className="w-5 h-5" />
+              Coba Kalkulator Gratis
+            </Link>
             <Link 
               href="#portfolio" 
               className="w-full sm:w-auto px-8 py-4 rounded-xl bg-white text-slate-700 font-bold hover:bg-slate-50 border border-slate-200 transition-colors flex items-center justify-center gap-2"
@@ -282,7 +288,7 @@ export default async function Home() {
             <ul className="space-y-2 text-sm text-slate-500">
               <li>Jakarta, Indonesia</li>
               <li><a href="mailto:hello@contechlabs.id" className="hover:text-orange-600">hello@contechlabs.id</a></li>
-              <li><a href="https://wa.me/6282280307626" className="hover:text-orange-600">+62 822-8030-7626</a></li>
+              <li><a href="https://wa.me/6282280307626" className="hover:text-orange-600">+62 812-3456-7626</a></li>
             </ul>
           </div>
         </div>
