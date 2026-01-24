@@ -50,7 +50,7 @@ export default function Home() {
             {/* GANTI LINK INI DENGAN LINK LOGO SUPABASE ANDA */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
-                src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/12022f7c-7472-4e9f-8646-60037a4e402b-0.9023533924739527.png" 
+                src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
                 alt="ConTech Background" 
                 className="w-full h-full object-contain grayscale"
             />
@@ -66,7 +66,7 @@ export default function Home() {
           <div className="flex items-center gap-3">
             {/* Logo Kecil di Navbar */}
             <img 
-                src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/12022f7c-7472-4e9f-8646-60037a4e402b-0.9023533924739527.png" 
+                src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
                 alt="Logo" className="w-8 h-8 object-contain" 
             />
             <span className="font-bold text-white tracking-tight">CONTECH<span className="text-orange-500">LABS</span></span>
@@ -253,7 +253,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
                 <img 
-                    src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/12022f7c-7472-4e9f-8646-60037a4e402b-0.9023533924739527.png" 
+                    src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
                     alt="Logo" className="w-6 h-6 object-contain grayscale opacity-50" 
                 />
                 <span className="font-bold text-slate-500 tracking-widest">CONTECH LABS</span>
