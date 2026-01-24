@@ -3,12 +3,12 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calculator, ArrowLeft, Download, Save, MapPin, Package, Lock } from 'lucide-react';
+import { Calculator, ArrowLeft, Download, Save, MapPin, Package, Building2 } from 'lucide-react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
-// --- DATA MASTER AHSP ---
+// --- DATA MASTER AHSP (Tetap Sama) ---
 const DATA_AHSP: any = {
   'pekerjaan_tanah': [
     { id: 'galian', nama: 'Galian Tanah Biasa (1m)', unit: 'm³', harga_dasar: 85000, koef: {} },
@@ -43,51 +43,77 @@ const REGIONAL_INDEX: any = {
   'papua': { nama: 'Papua', index: 1.8 },
 };
 
+// --- HELPER UNTUK GAMBAR PDF ---
+// Fungsi ini mengubah URL gambar menjadi Base64 agar bisa dicetak di PDF
+const getBase64FromUrl = async (url: string): Promise<string> => {
+  const data = await fetch(url);
+  const blob = await data.blob();
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(blob); 
+    reader.onloadend = () => {
+      const base64data = reader.result;   
+      resolve(base64data as string);
+    }
+  });
+}
+
 function CalculatorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const projectId = searchParams.get('id');
 
   const [user, setUser] = useState<any>(null);
-  const [isCheckingUser, setIsCheckingUser] = useState(true); // Status Loading User
+  const [profile, setProfile] = useState<any>(null); // DATA PERUSAHAAN USER
+  const [isCheckingUser, setIsCheckingUser] = useState(true);
   
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('jakarta');
   const [items, setItems] = useState<any[]>([]); 
   const [isSaving, setIsSaving] = useState(false);
   const [loadingData, setLoadingData] = useState(false);
+  const [pdfGenerating, setPdfGenerating] = useState(false); // Loading saat bikin PDF
 
   // Input States
   const [selectedCategory, setSelectedCategory] = useState('pekerjaan_tanah');
   const [selectedWork, setSelectedWork] = useState(DATA_AHSP['pekerjaan_tanah'][0].id);
   const [inputVolume, setInputVolume] = useState<number | ''>('');
   
+  // Custom Input States
   const [isCustom, setIsCustom] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customUnit, setCustomUnit] = useState('ls');
   const [customPrice, setCustomPrice] = useState<number | ''>('');
 
-  // 1. CEK USER & PROTEKSI HALAMAN (SECURITY)
+  // 1. CEK USER & LOAD PROFIL PERUSAHAAN
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        // Redirect ke Login jika tidak ada user
         router.replace('/auth');
       } else {
         setUser(user);
-        setIsCheckingUser(false); // Selesai cek, buka gerbang
+        
+        // AMBIL DATA PROFIL (WHITE LABEL)
+        const { data: profileData } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+        
+        if (profileData) setProfile(profileData);
+        setIsCheckingUser(false);
       }
     };
     checkUser();
   }, [router]);
 
-  // 2. LOAD DATA PROYEK
+  // 2. LOAD DATA PROYEK (Jika Edit)
   useEffect(() => {
     const loadProject = async () => {
       if (!projectId) return;
       setLoadingData(true);
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('saved_rabs')
         .select('*')
         .eq('id', projectId)
@@ -95,16 +121,14 @@ function CalculatorContent() {
 
       if (data) {
         setProjectName(data.project_name);
-        if (data.detail_material?.items) {
-            setItems(data.detail_material.items);
-        }
+        if (data.detail_material?.items) setItems(data.detail_material.items);
       }
       setLoadingData(false);
     };
-    if (user) loadProject(); // Load hanya jika user sudah ada
+    if (user) loadProject();
   }, [projectId, user]);
 
-  // Helper & Logic Functions (Sama seperti sebelumnya)
+  // --- LOGIC FUNCTIONS ---
   const generateMaterialDetails = (workId: string, category: string, vol: number) => {
     const workData = DATA_AHSP[category]?.find((w: any) => w.id === workId);
     if (!workData || !workData.koef) return "-";
@@ -125,12 +149,12 @@ function CalculatorContent() {
     const finalPrice = Math.round(workData.harga_dasar * regionalIdx);
     const materialDetail = generateMaterialDetails(selectedWork, selectedCategory, Number(inputVolume));
 
-    const newItem = {
+    setItems([...items, {
       id: Date.now(), workName: workData.nama, materialDetail: materialDetail,
       unit: workData.unit, volume: Number(inputVolume),
       unitPrice: finalPrice, totalPrice: finalPrice * Number(inputVolume), isCustom: false
-    };
-    setItems([...items, newItem]); setInputVolume('');
+    }]);
+    setInputVolume('');
   };
 
   const addCustomItem = () => {
@@ -160,29 +184,75 @@ function CalculatorContent() {
     if (error) alert(error.message); else router.push('/dashboard');
   };
 
-  const downloadPDF = () => {
+  // --- PDF GENERATOR (DENGAN LOGO USER) ---
+  const downloadPDF = async () => {
+    setPdfGenerating(true);
     try {
-        const doc = new jsPDF() as any;
-        const regionName = REGIONAL_INDEX[location].nama;
-        doc.setFontSize(18); doc.setTextColor(234, 88, 12); doc.text("CONTECH LABS", 15, 20);
-        doc.setFontSize(10); doc.setTextColor(100); doc.text("Professional Estimator Tool", 15, 25);
-        doc.line(15, 30, 195, 30);
-        doc.setFontSize(14); doc.setTextColor(0); doc.text("REKAPITULASI RAB", 105, 45, { align: 'center' });
-        doc.setFontSize(10); doc.text(`Proyek : ${projectName || '-'} (${regionName})`, 15, 60);
-        const tableData = items.map(item => [item.workName + `\n(${item.materialDetail})`,`${item.volume} ${item.unit}`,`Rp ${item.unitPrice.toLocaleString()}`,`Rp ${item.totalPrice.toLocaleString()}`]);
-        autoTable(doc, { startY: 70, head: [['Pekerjaan / Material', 'Vol', 'Hrg Sat', 'Total']], body: tableData, theme: 'grid', headStyles: { fillColor: [234, 88, 12] }, foot: [['', '', 'TOTAL', `Rp ${grandTotal.toLocaleString()}`]] });
-        doc.save(`RAB-${projectName}.pdf`);
-    } catch (e) { alert("PDF Error: Coba refresh halaman."); }
+      const doc = new jsPDF() as any;
+      const regionName = REGIONAL_INDEX[location].nama;
+      
+      // LOGIKA KOP SURAT (WHITE LABEL)
+      let yStart = 20;
+      
+      if (profile?.logo_url) {
+          try {
+              // Convert URL Logo User ke Base64
+              const imgBase64 = await getBase64FromUrl(profile.logo_url);
+              // Tambahkan Logo: (image, format, x, y, width, height)
+              doc.addImage(imgBase64, 'JPEG', 15, 10, 25, 25);
+          } catch (e) {
+              console.error("Gagal load logo user", e);
+          }
+      }
+
+      // Nama Perusahaan User (atau Default ConTech)
+      doc.setFontSize(18); doc.setTextColor(40, 40, 40);
+      doc.text(profile?.company_name || "CONTECH LABS", 45, 20); // Geser teks ke kanan (x=45) biar gak nabrak logo
+      
+      doc.setFontSize(10); doc.setTextColor(100);
+      const alamat = profile?.company_address || "Digital Construction Solutions";
+      doc.text(alamat, 45, 26);
+      
+      doc.setLineWidth(0.5);
+      doc.line(15, 40, 195, 40);
+
+      // Judul Dokumen
+      doc.setFontSize(14); doc.setTextColor(0); 
+      doc.text("REKAPITULASI RAB", 105, 55, { align: 'center' });
+      
+      doc.setFontSize(10);
+      doc.text(`Proyek : ${projectName || '-'}`, 15, 70);
+      doc.text(`Lokasi : ${regionName}`, 15, 76);
+      doc.text(`Tanggal: ${new Date().toLocaleDateString('id-ID')}`, 150, 70);
+
+      const tableData = items.map(item => [
+          item.workName + `\n(${item.materialDetail})`,
+          `${item.volume} ${item.unit}`,
+          `Rp ${item.unitPrice.toLocaleString()}`,
+          `Rp ${item.totalPrice.toLocaleString()}`
+      ]);
+
+      autoTable(doc, {
+          startY: 85,
+          head: [['Pekerjaan / Material', 'Vol', 'Hrg Sat', 'Total']],
+          body: tableData,
+          theme: 'grid',
+          headStyles: { fillColor: [40, 40, 40] }, // Warna Netral (Hitam/Abu) biar masuk ke logo user apa aja
+          foot: [['', '', 'TOTAL', `Rp ${grandTotal.toLocaleString()}`]],
+          footStyles: { fillColor: [234, 88, 12], fontSize: 12 } // Aksen Orange tetap ada di Total
+      });
+
+      doc.save(`RAB-${projectName}.pdf`);
+    } catch (e) {
+      alert("Gagal generate PDF. Coba lagi.");
+      console.error(e);
+    } finally {
+        setPdfGenerating(false);
+    }
   };
 
-  // TAMPILAN SAAT CEK USER (Loading Screen)
   if (isCheckingUser || loadingData) {
-    return (
-        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
-            <p className="text-slate-500 font-bold animate-pulse">Memeriksa Akses...</p>
-        </div>
-    );
+    return <div className="min-h-screen flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div></div>;
   }
 
   return (
@@ -192,6 +262,7 @@ function CalculatorContent() {
              <h1 className="font-bold">Estimator Pro V3</h1>
         </nav>
 
+        {/* INFO */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><MapPin className="w-5 h-5 text-orange-600" /> Info Proyek</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -202,6 +273,7 @@ function CalculatorContent() {
             </div>
         </div>
 
+        {/* INPUT */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold text-slate-800 flex items-center gap-2"><Calculator className="w-5 h-5 text-orange-600" /> Input Data</h2>
@@ -238,8 +310,24 @@ function CalculatorContent() {
             )}
         </div>
 
+        {/* TABEL HASIL */}
         {items.length > 0 && (
             <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-20">
+                
+                {/* Header Profil (Preview White Label di Layar) */}
+                {profile && (
+                    <div className="bg-slate-50 p-4 border-b border-slate-200 flex items-center gap-3">
+                        <div className="text-xs text-slate-400 uppercase font-bold">RAB Prepared By:</div>
+                        <div className="flex items-center gap-2">
+                            {profile.logo_url ? (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={profile.logo_url} alt="Logo" className="w-6 h-6 object-contain" />
+                            ) : <Building2 className="w-4 h-4 text-slate-400"/>}
+                            <span className="font-bold text-slate-700">{profile.company_name || "ConTech User"}</span>
+                        </div>
+                    </div>
+                )}
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-50 text-slate-500">
@@ -265,7 +353,9 @@ function CalculatorContent() {
                     </table>
                 </div>
                 <div className="p-4 bg-slate-50 flex gap-3 justify-end">
-                     <button onClick={downloadPDF} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg font-bold text-slate-600 hover:bg-white"><Download className="w-4 h-4" /> PDF</button>
+                     <button onClick={downloadPDF} disabled={pdfGenerating} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg font-bold text-slate-600 hover:bg-white">
+                        {pdfGenerating ? 'Generating...' : <><Download className="w-4 h-4" /> PDF</>}
+                     </button>
                      <button onClick={saveProject} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700">{isSaving ? '...' : 'Simpan'}</button>
                 </div>
             </div>
