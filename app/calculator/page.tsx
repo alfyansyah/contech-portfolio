@@ -2,7 +2,7 @@
 
 // PERBAIKAN DI SINI: Menambahkan "React" agar tidak error UMD global
 import React, { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import { Calculator, ArrowLeft, Download, Save, MapPin, ChevronRight, PlusCircle, Edit2 } from 'lucide-react';
 import Link from 'next/link';
