@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
-import { Terminal, LogOut, FileText, Plus, Search, Trash2, Eye } from 'lucide-react';
+import { Terminal, LogOut, FileText, Plus, Search, Trash2, Eye, Settings } from 'lucide-react';
 import Link from 'next/link';
 
 export default function DashboardPage() {
@@ -15,11 +15,7 @@ export default function DashboardPage() {
   useEffect(() => {
     const getData = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        router.push('/auth'); 
-        return;
-      }
+      if (!user) { router.push('/auth'); return; }
       
       setUserEmail(user.email || 'User');
 
@@ -43,9 +39,7 @@ export default function DashboardPage() {
   const handleDelete = async (id: number) => {
     if(!confirm("Yakin hapus data ini?")) return;
     const { error } = await supabase.from('saved_rabs').delete().eq('id', id);
-    if (!error) {
-      setProjects(projects.filter(p => p.id !== id));
-    }
+    if (!error) { setProjects(projects.filter(p => p.id !== id)); }
   };
 
   if (loading) return <div className="min-h-screen flex items-center justify-center bg-slate-50 text-slate-400">Memuat Data...</div>;
@@ -60,8 +54,14 @@ export default function DashboardPage() {
             </div>
             <span className="font-bold text-slate-900 hidden sm:block">CONTECH<span className="text-orange-600">DASHBOARD</span></span>
           </div>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             <span className="text-sm text-slate-500 hidden sm:block">{userEmail}</span>
+            
+            {/* TOMBOL SETTINGS BARU */}
+            <Link href="/settings" className="text-slate-500 hover:text-orange-600 p-2 rounded hover:bg-slate-100 transition" title="Pengaturan Profil">
+                <Settings className="w-5 h-5" />
+            </Link>
+
             <button onClick={handleLogout} className="text-xs font-bold text-red-600 px-3 py-2 rounded border border-red-100 hover:bg-red-50">Logout</button>
           </div>
         </div>
@@ -95,7 +95,6 @@ export default function DashboardPage() {
                   <span className="font-bold text-orange-600">Rp {item.total_cost?.toLocaleString('id-ID')}</span>
               </div>
               
-              {/* PERBAIKAN DI SINI: Tombol sekarang mengarah ke Kalkulator dengan membawa ID */}
               <Link 
                 href={`/calculator?id=${item.id}`}
                 className="w-full flex items-center justify-center gap-2 py-2 bg-slate-50 text-slate-600 text-sm font-bold rounded-lg border border-slate-200 hover:bg-slate-900 hover:text-white transition-colors"
