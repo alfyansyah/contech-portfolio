@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   Terminal, ArrowRight, LayoutDashboard, Smartphone, 
-  Bot, CheckCircle2, ChevronRight, Zap, Code2, Layers
+  Bot, ChevronRight, Zap, Code2, Layers
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -26,13 +26,13 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-[#0B0C10] text-slate-300 font-sans selection:bg-orange-500/30 selection:text-orange-200 overflow-x-hidden">
       
-      {/* BACKGROUND GRID (Tech Vibe) */}
+      {/* BACKGROUND GRID */}
       <div className="fixed inset-0 z-0 pointer-events-none">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
         <div className="absolute left-0 right-0 top-0 -z-10 m-auto h-[310px] w-[310px] rounded-full bg-orange-500 opacity-20 blur-[100px]"></div>
       </div>
 
-      {/* 1. NAVBAR (Floating Pill) */}
+      {/* 1. NAVBAR */}
       <nav className="fixed w-full top-6 z-50 px-4">
         <div className="max-w-5xl mx-auto bg-[#15161A]/80 backdrop-blur-md border border-white/10 rounded-full px-6 h-16 flex items-center justify-between shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
@@ -57,11 +57,10 @@ export default function Home() {
         </div>
       </nav>
 
-      {/* 2. HERO SECTION (Cyberpunk / Modern Tech) */}
+      {/* 2. HERO SECTION */}
       <section className="relative pt-48 pb-32 px-4 z-10">
         <div className="max-w-6xl mx-auto text-center">
           
-          {/* Badge */}
           <motion.div 
             initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
             className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-orange-500/30 bg-orange-500/10 text-orange-400 text-[10px] font-mono mb-8"
@@ -73,7 +72,6 @@ export default function Home() {
             SYSTEM ONLINE V2.0
           </motion.div>
           
-          {/* Main Headline */}
           <motion.h1 
             initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }}
             className="text-5xl md:text-8xl font-extrabold text-white tracking-tighter mb-8 leading-[0.9]"
@@ -106,7 +104,7 @@ export default function Home() {
             </Link>
           </div>
 
-          {/* Code Snippet Visual (The "Tech" Touch) */}
+          {/* Code Snippet Visual - DIPERBAIKI */}
           <motion.div 
             initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.5, duration: 0.8 }}
             className="mt-20 mx-auto max-w-3xl bg-[#0F1115] border border-white/10 rounded-xl overflow-hidden shadow-2xl"
@@ -118,9 +116,9 @@ export default function Home() {
                 <div className="ml-2 text-xs font-mono text-slate-500">calculate_rab.ts</div>
             </div>
             <div className="p-6 text-left font-mono text-xs md:text-sm text-slate-400 overflow-hidden">
-                <p><span className="text-purple-400">const</span> <span className="text-blue-400">calculateRAB</span> = <span className="text-yellow-400">async</span> (data) ={'>'} {'{'}</p>
-                <p className="pl-4"><span className="text-slate-500">// AI analyzing structure volume...</span></p>
-                <p className="pl-4"><span className="text-purple-400">const</span> efficiency = <span className="text-green-400">"35%"</span>;</p>
+                <p><span className="text-purple-400">const</span> <span className="text-blue-400">calculateRAB</span> = <span className="text-yellow-400">async</span> (data) =&gt; {'{'}</p>
+                <p className="pl-4"><span className="text-slate-500">{'// AI analyzing structure volume...'}</span></p>
+                <p className="pl-4"><span className="text-purple-400">const</span> efficiency = <span className="text-green-400">&quot;35%&quot;</span>;</p>
                 <p className="pl-4"><span className="text-purple-400">return</span> optimizeCost(data, efficiency);</p>
                 <p>{'}'}</p>
                 <p className="mt-2 text-orange-500 animate-pulse">_Cursor ready...</p>
@@ -161,10 +159,11 @@ export default function Home() {
                         </div>
                         <p className="text-slate-400">Jangan biarkan admin Anda copy-paste Excel seharian. Kami membuat bot AI yang membaca PDF, input data otomatis, dan mengirim laporan via WhatsApp.</p>
                     </div>
+                    {/* Visual Code - DIPERBAIKI */}
                     <div className="flex-1 w-full bg-black/30 rounded-xl p-4 border border-white/5 font-mono text-xs text-green-400">
-                        {'>'} Processing invoice... OK<br/>
-                        {'>'} Updating inventory... OK<br/>
-                        {'>'} Sending report to Owner... SENT.
+                        &gt; Processing invoice... OK<br/>
+                        &gt; Updating inventory... OK<br/>
+                        &gt; Sending report to Owner... SENT.
                     </div>
                 </div>
             </div>
@@ -183,7 +182,6 @@ export default function Home() {
                 {tools.map((tool, i) => (
                     <div key={tool.id} className="group bg-[#15161A] border border-white/5 rounded-2xl overflow-hidden hover:translate-y-[-5px] transition-all duration-300">
                         <div className="h-48 bg-slate-800/50 flex items-center justify-center border-b border-white/5 relative overflow-hidden">
-                            {/* Abstract Image Pattern */}
                             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
                             <Layers className="w-12 h-12 text-slate-600 group-hover:text-orange-500 transition-colors" />
                         </div>
@@ -200,35 +198,4 @@ export default function Home() {
                                     LIVE DEMO
                                 </Link>
                             ) : (
-                                <button disabled className="block w-full py-3 bg-slate-800 text-slate-500 text-center font-bold text-sm rounded-lg cursor-not-allowed">
-                                    DEV MODE
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        </div>
-      </section>
-
-      {/* 5. FOOTER (Minimalist) */}
-      <footer className="border-t border-white/5 py-12 px-4 bg-black">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-slate-800 rounded flex items-center justify-center text-white text-xs">C</div>
-                <span className="font-bold text-slate-500 tracking-widest">CONTECH LABS</span>
-            </div>
-            <div className="text-slate-600 text-sm">
-                &copy; 2024 Digital Construction Infrastructure.
-            </div>
-            <div className="flex gap-6 text-slate-500 text-sm">
-                <a href="#" className="hover:text-white transition-colors">GitHub</a>
-                <a href="#" className="hover:text-white transition-colors">Twitter</a>
-                <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
-            </div>
-        </div>
-      </footer>
-
-    </main>
-  );
-}
+                                <button disabled className="block w-full py-3 bg-slate-800 text-slate-500 text-center font-bold text-sm roun
