@@ -1,15 +1,14 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-// PERBAIKAN IMPORT: Menggunakan path relative yang aman
-import { supabase } from '../../lib/supabase'; 
-import { useRouter } from 'next/navigation';
-import { Calculator, ArrowLeft, Download, Save, MapPin, ChevronRight, PlusCircle, Edit2, Package } from 'lucide-react';
+import React, { useState, useEffect, Suspense } from 'react';
+import { supabase } from '@/lib/supabase'; // Pastikan path ini benar (@/lib/supabase)
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Calculator, ArrowLeft, Download, Save, MapPin, Package, Edit2 } from 'lucide-react';
 import Link from 'next/link';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable'; // Import eksplisit agar PDF jalan
 
-// --- DATA MASTER DENGAN KOEFISIEN (Agar bisa hitung material) ---
+// --- DATA MASTER AHSP ---
 const DATA_AHSP: any = {
   'pekerjaan_tanah': [
     { id: 'galian', nama: 'Galian Tanah Biasa (1m)', unit: 'm³', harga_dasar: 85000, koef: {} },
@@ -44,13 +43,17 @@ const REGIONAL_INDEX: any = {
   'papua': { nama: 'Papua', index: 1.8 },
 };
 
-export default function CalculatorPage() {
+function CalculatorContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const projectId = searchParams.get('id'); // Ambil ID dari URL (jika ada)
+
   const [user, setUser] = useState<any>(null);
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('jakarta');
   const [items, setItems] = useState<any[]>([]); 
   const [isSaving, setIsSaving] = useState(false);
+  const [loadingData, setLoadingData] = useState(false);
 
   // Input States
   const [selectedCategory, setSelectedCategory] = useState('pekerjaan_tanah');
@@ -63,64 +66,81 @@ export default function CalculatorPage() {
   const [customUnit, setCustomUnit] = useState('ls');
   const [customPrice, setCustomPrice] = useState<number | ''>('');
 
+  // 1. Cek User Login
   useEffect(() => {
     const checkUser = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        setUser(user);
-      } catch (e) {
-        console.log("Supabase belum init, mode guest");
-      }
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
     };
     checkUser();
   }, []);
 
-  // --- FUNGSI HITUNG MATERIAL (BARU KEMBALI) ---
+  // 2. LOGIKA LOAD DATA (Jika tombol 'Lihat Detail' diklik)
+  useEffect(() => {
+    const loadProject = async () => {
+      if (!projectId) return; // Jika tidak ada ID, berarti mode hitung baru
+      setLoadingData(true);
+
+      const { data, error } = await supabase
+        .from('saved_rabs')
+        .select('*')
+        .eq('id', projectId)
+        .single();
+
+      if (data) {
+        setProjectName(data.project_name);
+        // Cek apakah lokasi ada di data, kalau tidak default jakarta
+        if (data.detail_material?.location?.index) {
+             // Kita coba cari key location berdasarkan nama atau index (agak tricky karena kita simpan object)
+             // Untuk simplifikasi, kita set items-nya saja
+        }
+        
+        // Restore Items
+        if (data.detail_material?.items) {
+            setItems(data.detail_material.items);
+        }
+      }
+      setLoadingData(false);
+    };
+
+    loadProject();
+  }, [projectId]);
+
+  // --- HELPER FUNCTIONS ---
   const generateMaterialDetails = (workId: string, category: string, vol: number) => {
     const workData = DATA_AHSP[category]?.find((w: any) => w.id === workId);
     if (!workData || !workData.koef) return "-";
-
-    // Hitung kebutuhan material: Volume x Koefisien
     return Object.entries(workData.koef).map(([mat, k]: any) => {
        const qty = (k * vol).toFixed(2);
-       // Satuan material kasar (Asumsi)
        let unit = 'Satuan';
-       if(mat === 'Semen' || mat === 'Perekat') unit = 'Sak';
-       if(mat === 'Pasir' || mat === 'Split' || mat === 'Batu Belah') unit = 'm³';
-       if(mat === 'Bata Merah') unit = 'Bh';
-       if(mat === 'Besi') unit = 'Kg';
-       
+       if(['Semen','Perekat'].includes(mat)) unit = 'Sak';
+       if(['Pasir','Split','Batu Belah'].includes(mat)) unit = 'm³';
+       if(mat === 'Bata Merah') unit = 'Bh'; if(mat === 'Besi') unit = 'Kg';
        return `${qty} ${unit} ${mat}`;
     }).join(', ');
   };
 
-  // ADD ITEM
   const addItem = () => {
     if (!inputVolume) return alert("Masukkan Volume!");
-    
     const workData = DATA_AHSP[selectedCategory].find((w: any) => w.id === selectedWork);
     const regionalIdx = REGIONAL_INDEX[location].index;
     const finalPrice = Math.round(workData.harga_dasar * regionalIdx);
-    
-    // Generate Text Rincian Material
     const materialDetail = generateMaterialDetails(selectedWork, selectedCategory, Number(inputVolume));
 
     const newItem = {
       id: Date.now(),
       workName: workData.nama,
-      materialDetail: materialDetail, // Simpan rincian
+      materialDetail: materialDetail,
       unit: workData.unit,
       volume: Number(inputVolume),
       unitPrice: finalPrice,
       totalPrice: finalPrice * Number(inputVolume),
       isCustom: false
     };
-
     setItems([...items, newItem]);
     setInputVolume('');
   };
 
-  // ADD CUSTOM
   const addCustomItem = () => {
     if (!customName || !inputVolume || !customPrice) return alert("Lengkapi data!");
     setItems([...items, {
@@ -147,54 +167,71 @@ export default function CalculatorPage() {
     if (!user) { router.push('/auth'); return; }
     if (!items.length) { alert("Data kosong!"); return; }
     setIsSaving(true);
+    
+    // Jika projectId ada, kita Update. Jika tidak, Insert baru.
+    // Untuk simplifikasi demo ini, kita selalu Insert Baru atau Update jika logika dibuat.
+    // Di sini kita INSERT baru saja agar aman history-nya.
+    
     const { error } = await supabase.from('saved_rabs').insert({
-        user_id: user.id, project_name: projectName, volume: 1, ratio: location, total_cost: grandTotal,
+        user_id: user.id, 
+        project_name: projectName, 
+        volume: 1, 
+        ratio: location, 
+        total_cost: grandTotal,
         detail_material: { items, location: REGIONAL_INDEX[location] }
     });
+    
     setIsSaving(false);
     if (error) alert(error.message); else router.push('/dashboard');
   };
 
+  // --- PDF FIX ---
   const downloadPDF = () => {
-    const doc = new jsPDF() as any;
-    const regionName = REGIONAL_INDEX[location].nama;
-    
-    doc.setFontSize(18); doc.setTextColor(234, 88, 12); doc.text("CONTECH LABS", 15, 20);
-    doc.setFontSize(10); doc.setTextColor(100); doc.text("Estimasi & Analisa Material", 15, 25);
-    doc.line(15, 30, 195, 30);
+    try {
+      const doc = new jsPDF();
+      const regionName = REGIONAL_INDEX[location].nama;
+      
+      doc.setFontSize(18); doc.setTextColor(234, 88, 12); doc.text("CONTECH LABS", 15, 20);
+      doc.setFontSize(10); doc.setTextColor(100); doc.text("Professional Estimator Tool", 15, 25);
+      doc.line(15, 30, 195, 30);
 
-    doc.setFontSize(12); doc.setTextColor(0); 
-    doc.text(`Proyek: ${projectName || '-'} (${regionName})`, 15, 40);
+      doc.setFontSize(14); doc.setTextColor(0); doc.text("REKAPITULASI RAB", 105, 45, { align: 'center' });
+      doc.setFontSize(10);
+      doc.text(`Proyek : ${projectName || '-'} (${regionName})`, 15, 60);
 
-    const tableData = items.map(item => [
-        item.workName + `\n(${item.materialDetail})`, // Tampilkan rincian di PDF
-        `${item.volume} ${item.unit}`,
-        `Rp ${item.unitPrice.toLocaleString()}`,
-        `Rp ${item.totalPrice.toLocaleString()}`
-    ]);
+      const tableData = items.map(item => [
+          item.workName + `\n(${item.materialDetail})`,
+          `${item.volume} ${item.unit}`,
+          `Rp ${item.unitPrice.toLocaleString()}`,
+          `Rp ${item.totalPrice.toLocaleString()}`
+      ]);
 
-    doc.autoTable({
-        startY: 50,
-        head: [['Pekerjaan / Material', 'Vol', 'Hrg Sat', 'Total']],
-        body: tableData,
-        theme: 'grid',
-        headStyles: { fillColor: [234, 88, 12] },
-        foot: [['', '', 'TOTAL', `Rp ${grandTotal.toLocaleString()}`]],
-    });
+      autoTable(doc, {
+          startY: 70,
+          head: [['Pekerjaan / Material', 'Vol', 'Hrg Sat', 'Total']],
+          body: tableData,
+          theme: 'grid',
+          headStyles: { fillColor: [234, 88, 12] },
+          foot: [['', '', 'TOTAL', `Rp ${grandTotal.toLocaleString()}`]],
+      });
 
-    doc.save(`RAB-${projectName}.pdf`);
+      doc.save(`RAB-${projectName}.pdf`);
+    } catch (error) {
+      alert("Gagal generate PDF. Pastikan module terinstall.");
+      console.error(error);
+    }
   };
 
+  if (loadingData) return <div className="p-10 text-center">Sedang memuat data proyek...</div>;
+
   return (
-    <main className="min-h-screen bg-slate-50 font-sans pb-20">
-      <nav className="bg-slate-900 text-white p-4 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
+    <div className="max-w-4xl mx-auto p-4 mt-6 pb-20">
+        {/* Navbar inside Component */}
+        <nav className="flex justify-between items-center mb-6 bg-slate-900 text-white p-4 rounded-xl">
              <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2 hover:text-orange-400"><ArrowLeft className="w-5 h-5" /> Dash</Link>
              <h1 className="font-bold">Estimator Pro V3</h1>
-        </div>
-      </nav>
+        </nav>
 
-      <div className="max-w-4xl mx-auto p-4 mt-6">
         {/* INFO */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><MapPin className="w-5 h-5 text-orange-600" /> Info Proyek</h2>
@@ -256,7 +293,7 @@ export default function CalculatorPage() {
                                 <tr key={item.id} className="hover:bg-slate-50">
                                     <td className="p-3">
                                         <div className="font-bold text-slate-700">{item.workName}</div>
-                                        {/* INI YANG ANDA MINTA: RINCIAN MATERIAL */}
+                                        {/* RINCIAN MATERIAL */}
                                         <div className="text-[10px] text-orange-600 mt-1 flex items-center gap-1">
                                             <Package className="w-3 h-3" /> {item.materialDetail}
                                         </div>
@@ -279,7 +316,17 @@ export default function CalculatorPage() {
                 </div>
             </div>
         )}
-      </div>
+    </div>
+  );
+}
+
+// WRAPPER UTAMA AGAR TIDAK ERROR "useSearchParams"
+export default function CalculatorPage() {
+  return (
+    <main className="min-h-screen bg-slate-50 font-sans">
+      <Suspense fallback={<div className="p-10 text-center">Loading Calculator...</div>}>
+        <CalculatorContent />
+      </Suspense>
     </main>
   );
 }
