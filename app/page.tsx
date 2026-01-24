@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Bot, Smartphone, CheckCircle2, Building2, UserCircle 
 } from 'lucide-react';
 import Link from 'next/link';
-
+import React, { useState, useEffect } from 'react';
 export const revalidate = 0;
 
 async function getTools() {
