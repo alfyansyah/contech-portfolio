@@ -1,7 +1,11 @@
 "use client";
 
-import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
+// 1. PERBAIKAN: Tambah 'React' di sini agar error UMD hilang
+import React, { useState, useEffect } from 'react';
+
+// 2. PERBAIKAN: Ganti '@' dengan '../../' agar pasti ketemu filenya
+import { supabase } from '../../lib/supabase';
+
 import { useRouter } from 'next/navigation';
 import { Building2, Save, ArrowLeft, UploadCloud, Image as ImageIcon, Loader2 } from 'lucide-react';
 import Link from 'next/link';

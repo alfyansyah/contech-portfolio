@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../../lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ShieldAlert, Users, FileText, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+
 
 export default function AdminPage() {
   const router = useRouter();

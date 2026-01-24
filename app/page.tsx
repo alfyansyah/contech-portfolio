@@ -1,7 +1,11 @@
 "use client";
 
-import { useEffect, useState } from 'react';
-import { supabase } from '@/lib/supabase';
+// 1. Tambah ini biar error UMD hilang
+import React, { useEffect, useState } from 'react'; 
+
+// 2. Ganti import Supabase pakai jalan manual (titik dua) biar pasti ketemu
+import { supabase } from '../lib/supabase'; 
+
 import { 
   Terminal, ArrowRight, LayoutDashboard, Smartphone, 
   Bot, ChevronRight, Zap, Code2, Layers
@@ -224,7 +228,7 @@ export default function Home() {
                 <span className="font-bold text-slate-500 tracking-widest">CONTECH LABS</span>
             </div>
             <div className="text-slate-600 text-sm">
-                &copy; 2024 Digital Construction Infrastructure.
+                &copy; 2022 Digital Construction Infrastructure.
             </div>
             <div className="flex gap-6 text-slate-500 text-sm">
                 <a href="#" className="hover:text-white transition-colors">GitHub</a>
