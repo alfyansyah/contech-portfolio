@@ -198,4 +198,35 @@ export default function Home() {
                                     LIVE DEMO
                                 </Link>
                             ) : (
-                                <button disabled className="block w-full py-3 bg-slate-800 text-slate-500 text-center font-bold text-sm roun
+                                <button disabled className="block w-full py-3 bg-slate-800 text-slate-500 text-center font-bold text-sm rounded-lg cursor-not-allowed">
+                                    DEV MODE
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+      </section>
+
+      {/* 5. FOOTER */}
+      <footer className="border-t border-white/5 py-12 px-4 bg-black">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div className="flex items-center gap-2">
+                <div className="w-6 h-6 bg-slate-800 rounded flex items-center justify-center text-white text-xs">C</div>
+                <span className="font-bold text-slate-500 tracking-widest">CONTECH LABS</span>
+            </div>
+            <div className="text-slate-600 text-sm">
+                &copy; 2024 Digital Construction Infrastructure.
+            </div>
+            <div className="flex gap-6 text-slate-500 text-sm">
+                <a href="#" className="hover:text-white transition-colors">GitHub</a>
+                <a href="#" className="hover:text-white transition-colors">Twitter</a>
+                <a href="#" className="hover:text-white transition-colors">LinkedIn</a>
+            </div>
+        </div>
+      </footer>
+
+    </main>
+  );
+}
