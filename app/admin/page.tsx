@@ -13,7 +13,7 @@ export default function AdminPage() {
   const [allProjects, setAllProjects] = useState<any[]>([]);
 
   // Masukkan Email Anda di sini untuk verifikasi di frontend juga
-  const MY_EMAIL = "email_anda@gmail.com"; // GANTI DENGAN EMAIL ANDA
+  const MY_EMAIL = "alfyansyah.syah@gmail.com"; // GANTI DENGAN EMAIL ANDA
 
   useEffect(() => {
     const checkAdmin = async () => {
