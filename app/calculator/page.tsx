@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { supabase } from '@/lib/supabase'; // Pastikan path ini benar (@/lib/supabase)
+import { supabase } from '../../lib/supabase';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calculator, ArrowLeft, Download, Save, MapPin, Package, Edit2 } from 'lucide-react';
+import { Calculator, ArrowLeft, Download, Save, MapPin, Package, Lock } from 'lucide-react';
 import Link from 'next/link';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable'; // Import eksplisit agar PDF jalan
+import autoTable from 'jspdf-autotable';
 
 // --- DATA MASTER AHSP ---
 const DATA_AHSP: any = {
@@ -46,9 +46,11 @@ const REGIONAL_INDEX: any = {
 function CalculatorContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const projectId = searchParams.get('id'); // Ambil ID dari URL (jika ada)
+  const projectId = searchParams.get('id');
 
   const [user, setUser] = useState<any>(null);
+  const [isCheckingUser, setIsCheckingUser] = useState(true); // Status Loading User
+  
   const [projectName, setProjectName] = useState('');
   const [location, setLocation] = useState('jakarta');
   const [items, setItems] = useState<any[]>([]); 
@@ -60,27 +62,31 @@ function CalculatorContent() {
   const [selectedWork, setSelectedWork] = useState(DATA_AHSP['pekerjaan_tanah'][0].id);
   const [inputVolume, setInputVolume] = useState<number | ''>('');
   
-  // Custom Input States
   const [isCustom, setIsCustom] = useState(false);
   const [customName, setCustomName] = useState('');
   const [customUnit, setCustomUnit] = useState('ls');
   const [customPrice, setCustomPrice] = useState<number | ''>('');
 
-  // 1. Cek User Login
+  // 1. CEK USER & PROTEKSI HALAMAN (SECURITY)
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      setUser(user);
+      if (!user) {
+        // Redirect ke Login jika tidak ada user
+        router.replace('/auth');
+      } else {
+        setUser(user);
+        setIsCheckingUser(false); // Selesai cek, buka gerbang
+      }
     };
     checkUser();
-  }, []);
+  }, [router]);
 
-  // 2. LOGIKA LOAD DATA (Jika tombol 'Lihat Detail' diklik)
+  // 2. LOAD DATA PROYEK
   useEffect(() => {
     const loadProject = async () => {
-      if (!projectId) return; // Jika tidak ada ID, berarti mode hitung baru
+      if (!projectId) return;
       setLoadingData(true);
-
       const { data, error } = await supabase
         .from('saved_rabs')
         .select('*')
@@ -89,24 +95,16 @@ function CalculatorContent() {
 
       if (data) {
         setProjectName(data.project_name);
-        // Cek apakah lokasi ada di data, kalau tidak default jakarta
-        if (data.detail_material?.location?.index) {
-             // Kita coba cari key location berdasarkan nama atau index (agak tricky karena kita simpan object)
-             // Untuk simplifikasi, kita set items-nya saja
-        }
-        
-        // Restore Items
         if (data.detail_material?.items) {
             setItems(data.detail_material.items);
         }
       }
       setLoadingData(false);
     };
+    if (user) loadProject(); // Load hanya jika user sudah ada
+  }, [projectId, user]);
 
-    loadProject();
-  }, [projectId]);
-
-  // --- HELPER FUNCTIONS ---
+  // Helper & Logic Functions (Sama seperti sebelumnya)
   const generateMaterialDetails = (workId: string, category: string, vol: number) => {
     const workData = DATA_AHSP[category]?.find((w: any) => w.id === workId);
     if (!workData || !workData.koef) return "-";
@@ -128,30 +126,19 @@ function CalculatorContent() {
     const materialDetail = generateMaterialDetails(selectedWork, selectedCategory, Number(inputVolume));
 
     const newItem = {
-      id: Date.now(),
-      workName: workData.nama,
-      materialDetail: materialDetail,
-      unit: workData.unit,
-      volume: Number(inputVolume),
-      unitPrice: finalPrice,
-      totalPrice: finalPrice * Number(inputVolume),
-      isCustom: false
+      id: Date.now(), workName: workData.nama, materialDetail: materialDetail,
+      unit: workData.unit, volume: Number(inputVolume),
+      unitPrice: finalPrice, totalPrice: finalPrice * Number(inputVolume), isCustom: false
     };
-    setItems([...items, newItem]);
-    setInputVolume('');
+    setItems([...items, newItem]); setInputVolume('');
   };
 
   const addCustomItem = () => {
     if (!customName || !inputVolume || !customPrice) return alert("Lengkapi data!");
     setItems([...items, {
-      id: Date.now(),
-      workName: customName,
-      materialDetail: "Item Custom",
-      unit: customUnit,
-      volume: Number(inputVolume),
-      unitPrice: Number(customPrice),
-      totalPrice: Number(customPrice) * Number(inputVolume),
-      isCustom: true
+      id: Date.now(), workName: customName, materialDetail: "Item Custom",
+      unit: customUnit, volume: Number(inputVolume),
+      unitPrice: Number(customPrice), totalPrice: Number(customPrice) * Number(inputVolume), isCustom: true
     }]);
     setCustomName(''); setInputVolume(''); setCustomPrice('');
   };
@@ -159,80 +146,52 @@ function CalculatorContent() {
   const updatePrice = (id: number, newPrice: number) => {
     setItems(items.map(item => item.id === id ? { ...item, unitPrice: newPrice, totalPrice: newPrice * item.volume } : item));
   };
-
   const deleteItem = (id: number) => setItems(items.filter(i => i.id !== id));
   const grandTotal = items.reduce((acc, curr) => acc + curr.totalPrice, 0);
 
   const saveProject = async () => {
-    if (!user) { router.push('/auth'); return; }
     if (!items.length) { alert("Data kosong!"); return; }
     setIsSaving(true);
-    
-    // Jika projectId ada, kita Update. Jika tidak, Insert baru.
-    // Untuk simplifikasi demo ini, kita selalu Insert Baru atau Update jika logika dibuat.
-    // Di sini kita INSERT baru saja agar aman history-nya.
-    
     const { error } = await supabase.from('saved_rabs').insert({
-        user_id: user.id, 
-        project_name: projectName, 
-        volume: 1, 
-        ratio: location, 
-        total_cost: grandTotal,
+        user_id: user.id, project_name: projectName, volume: 1, ratio: location, total_cost: grandTotal,
         detail_material: { items, location: REGIONAL_INDEX[location] }
     });
-    
     setIsSaving(false);
     if (error) alert(error.message); else router.push('/dashboard');
   };
 
-  // --- PDF FIX ---
   const downloadPDF = () => {
     try {
-      const doc = new jsPDF();
-      const regionName = REGIONAL_INDEX[location].nama;
-      
-      doc.setFontSize(18); doc.setTextColor(234, 88, 12); doc.text("CONTECH LABS", 15, 20);
-      doc.setFontSize(10); doc.setTextColor(100); doc.text("Professional Estimator Tool", 15, 25);
-      doc.line(15, 30, 195, 30);
-
-      doc.setFontSize(14); doc.setTextColor(0); doc.text("REKAPITULASI RAB", 105, 45, { align: 'center' });
-      doc.setFontSize(10);
-      doc.text(`Proyek : ${projectName || '-'} (${regionName})`, 15, 60);
-
-      const tableData = items.map(item => [
-          item.workName + `\n(${item.materialDetail})`,
-          `${item.volume} ${item.unit}`,
-          `Rp ${item.unitPrice.toLocaleString()}`,
-          `Rp ${item.totalPrice.toLocaleString()}`
-      ]);
-
-      autoTable(doc, {
-          startY: 70,
-          head: [['Pekerjaan / Material', 'Vol', 'Hrg Sat', 'Total']],
-          body: tableData,
-          theme: 'grid',
-          headStyles: { fillColor: [234, 88, 12] },
-          foot: [['', '', 'TOTAL', `Rp ${grandTotal.toLocaleString()}`]],
-      });
-
-      doc.save(`RAB-${projectName}.pdf`);
-    } catch (error) {
-      alert("Gagal generate PDF. Pastikan module terinstall.");
-      console.error(error);
-    }
+        const doc = new jsPDF() as any;
+        const regionName = REGIONAL_INDEX[location].nama;
+        doc.setFontSize(18); doc.setTextColor(234, 88, 12); doc.text("CONTECH LABS", 15, 20);
+        doc.setFontSize(10); doc.setTextColor(100); doc.text("Professional Estimator Tool", 15, 25);
+        doc.line(15, 30, 195, 30);
+        doc.setFontSize(14); doc.setTextColor(0); doc.text("REKAPITULASI RAB", 105, 45, { align: 'center' });
+        doc.setFontSize(10); doc.text(`Proyek : ${projectName || '-'} (${regionName})`, 15, 60);
+        const tableData = items.map(item => [item.workName + `\n(${item.materialDetail})`,`${item.volume} ${item.unit}`,`Rp ${item.unitPrice.toLocaleString()}`,`Rp ${item.totalPrice.toLocaleString()}`]);
+        autoTable(doc, { startY: 70, head: [['Pekerjaan / Material', 'Vol', 'Hrg Sat', 'Total']], body: tableData, theme: 'grid', headStyles: { fillColor: [234, 88, 12] }, foot: [['', '', 'TOTAL', `Rp ${grandTotal.toLocaleString()}`]] });
+        doc.save(`RAB-${projectName}.pdf`);
+    } catch (e) { alert("PDF Error: Coba refresh halaman."); }
   };
 
-  if (loadingData) return <div className="p-10 text-center">Sedang memuat data proyek...</div>;
+  // TAMPILAN SAAT CEK USER (Loading Screen)
+  if (isCheckingUser || loadingData) {
+    return (
+        <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mb-4"></div>
+            <p className="text-slate-500 font-bold animate-pulse">Memeriksa Akses...</p>
+        </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto p-4 mt-6 pb-20">
-        {/* Navbar inside Component */}
         <nav className="flex justify-between items-center mb-6 bg-slate-900 text-white p-4 rounded-xl">
-             <Link href={user ? "/dashboard" : "/"} className="flex items-center gap-2 hover:text-orange-400"><ArrowLeft className="w-5 h-5" /> Dash</Link>
+             <Link href="/dashboard" className="flex items-center gap-2 hover:text-orange-400"><ArrowLeft className="w-5 h-5" /> Dash</Link>
              <h1 className="font-bold">Estimator Pro V3</h1>
         </nav>
 
-        {/* INFO */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <h2 className="font-bold text-slate-800 mb-4 flex items-center gap-2"><MapPin className="w-5 h-5 text-orange-600" /> Info Proyek</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -243,7 +202,6 @@ function CalculatorContent() {
             </div>
         </div>
 
-        {/* INPUT */}
         <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-6">
             <div className="flex justify-between items-center mb-4">
                 <h2 className="font-bold text-slate-800 flex items-center gap-2"><Calculator className="w-5 h-5 text-orange-600" /> Input Data</h2>
@@ -280,7 +238,6 @@ function CalculatorContent() {
             )}
         </div>
 
-        {/* TABEL HASIL */}
         {items.length > 0 && (
             <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-20">
                 <div className="overflow-x-auto">
@@ -293,10 +250,7 @@ function CalculatorContent() {
                                 <tr key={item.id} className="hover:bg-slate-50">
                                     <td className="p-3">
                                         <div className="font-bold text-slate-700">{item.workName}</div>
-                                        {/* RINCIAN MATERIAL */}
-                                        <div className="text-[10px] text-orange-600 mt-1 flex items-center gap-1">
-                                            <Package className="w-3 h-3" /> {item.materialDetail}
-                                        </div>
+                                        <div className="text-[10px] text-orange-600 mt-1 flex items-center gap-1"><Package className="w-3 h-3" /> {item.materialDetail}</div>
                                     </td>
                                     <td className="p-3 text-right">{item.volume} {item.unit}</td>
                                     <td className="p-3 text-right"><input type="number" value={item.unitPrice} onChange={(e) => updatePrice(item.id, Number(e.target.value))} className="w-20 p-1 text-right border rounded bg-white" /></td>
@@ -312,7 +266,7 @@ function CalculatorContent() {
                 </div>
                 <div className="p-4 bg-slate-50 flex gap-3 justify-end">
                      <button onClick={downloadPDF} className="flex items-center gap-2 px-4 py-2 border border-slate-300 rounded-lg font-bold text-slate-600 hover:bg-white"><Download className="w-4 h-4" /> PDF</button>
-                     {user ? <button onClick={saveProject} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700">{isSaving ? '...' : 'Simpan'}</button> : <Link href="/auth" className="px-6 py-2 bg-slate-800 text-white rounded-lg font-bold">Login</Link>}
+                     <button onClick={saveProject} disabled={isSaving} className="flex items-center gap-2 px-6 py-2 bg-orange-600 text-white rounded-lg font-bold hover:bg-orange-700">{isSaving ? '...' : 'Simpan'}</button>
                 </div>
             </div>
         )}
@@ -320,11 +274,10 @@ function CalculatorContent() {
   );
 }
 
-// WRAPPER UTAMA AGAR TIDAK ERROR "useSearchParams"
 export default function CalculatorPage() {
   return (
     <main className="min-h-screen bg-slate-50 font-sans">
-      <Suspense fallback={<div className="p-10 text-center">Loading Calculator...</div>}>
+      <Suspense fallback={<div className="p-10 text-center">Loading...</div>}>
         <CalculatorContent />
       </Suspense>
     </main>
