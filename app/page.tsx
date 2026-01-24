@@ -36,9 +36,12 @@ export default function Home() {
       <nav className="fixed w-full top-6 z-50 px-4">
         <div className="max-w-5xl mx-auto bg-[#15161A]/80 backdrop-blur-md border border-white/10 rounded-full px-6 h-16 flex items-center justify-between shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-white shadow-lg shadow-orange-500/20">
-              <Terminal className="w-5 h-5" />
-            </div>
+            {/* GANTI LINK DI BAWAH DENGAN LINK SUPABASE ANDA */}
+<img 
+  src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
+  alt="ConTech Logo" 
+  className="w-10 h-10 object-contain drop-shadow-[0_0_15px_rgba(249,115,22,0.6)]"
+/>
             <span className="font-bold text-white tracking-tight">CONTECH<span className="text-orange-500">LABS</span></span>
           </div>
           
@@ -213,7 +216,11 @@ export default function Home() {
       <footer className="border-t border-white/5 py-12 px-4 bg-black">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-                <div className="w-6 h-6 bg-slate-800 rounded flex items-center justify-center text-white text-xs">C</div>
+            <img 
+  src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
+  alt="Logo" 
+  className="w-6 h-6 object-contain grayscale opacity-50 hover:grayscale-0 hover:opacity-100 transition-all"
+/>
                 <span className="font-bold text-slate-500 tracking-widest">CONTECH LABS</span>
             </div>
             <div className="text-slate-600 text-sm">
