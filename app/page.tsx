@@ -45,7 +45,8 @@ export default function Home() {
       <nav className="fixed w-full top-6 z-50 px-4">
         <div className="max-w-5xl mx-auto bg-[#15161A]/80 backdrop-blur-md border border-white/10 rounded-full px-6 h-16 flex items-center justify-between shadow-2xl shadow-black/50">
           <div className="flex items-center gap-3">
-            <img src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/dashboard%20estimator.png" alt="Logo" className="w-8 h-8 object-contain" />
+            <img src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
+                 alt="Logo" className="w-8 h-8 object-contain" />
             <span className="font-bold text-white tracking-tight">CONTECH<span className="text-orange-500">LABS</span></span>
           </div>
           <div className="hidden md:flex items-center gap-8 text-sm font-medium">
@@ -195,7 +196,8 @@ export default function Home() {
       <footer className="border-t border-white/5 py-12 px-4 bg-black relative z-10">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2">
-                <img src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/dashboard%20estimator.png" alt="Logo" className="w-6 h-6 object-contain grayscale opacity-50" />
+                <img src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" 
+                     alt="Logo" className="w-6 h-6 object-contain grayscale opacity-50" />
                 <span className="font-bold text-slate-500 tracking-widest">CONTECH LABS</span>
             </div>
             <div className="text-slate-600 text-sm">&copy; 2024 Smart Company Infrastructure.</div>
