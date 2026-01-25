@@ -36,7 +36,7 @@ export default function Home() {
             className="absolute w-[800px] h-[800px] opacity-[0.03] blur-sm"
         >
             {/* Logo Background (Gunakan Link Logo Anda) */}
-            <img src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/dashboard%20estimator.png" alt="" className="w-full h-full object-contain grayscale"/>
+            <img src="https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/logo-contech.png" alt="" className="w-full h-full object-contain grayscale"/>
         </motion.div>
         <div className="absolute h-[310px] w-[310px] rounded-full bg-orange-500 opacity-20 blur-[120px]"></div>
       </div>
@@ -68,7 +68,7 @@ export default function Home() {
           </motion.div>
           
           <motion.h1 initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.8 }} className="text-5xl md:text-8xl font-extrabold text-white tracking-tighter mb-8 leading-[0.9]">
-            WE BUILD THE <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-orange-500 to-red-500">DIGITAL BACKBONE</span> <br/> OF Company.
+            WE BUILD THE <br/> <span className="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-orange-500 to-red-500">DIGITAL BACKBONE</span> <br/> OF COMPANY.
           </motion.h1>
           
           <p className="text-lg md:text-xl text-slate-400 mb-12 max-w-2xl mx-auto leading-relaxed font-light">
@@ -180,12 +180,12 @@ export default function Home() {
                 <div className="p-6 border-l-2 border-blue-600 bg-white/5 rounded-r-xl">
                     <div className="mb-4 text-blue-500"><Globe className="w-8 h-8"/></div>
                     <h4 className="font-bold text-white mb-2">Phase 2: Connect</h4>
-                    <p className="text-sm text-slate-400">Menghubungkan data gudang, lapangan, dan keuangan dalam satu ekosistem real-time.</p>
+                    <p className="text-sm text-slate-400">Menghubungkan data, Laporan, lapangan, dan keuangan dalam satu ekosistem real-time.</p>
                 </div>
                 <div className="p-6 border-l-2 border-purple-600 bg-white/5 rounded-r-xl">
                     <div className="mb-4 text-purple-500"><Bot className="w-8 h-8"/></div>
                     <h4 className="font-bold text-white mb-2">Phase 3: Automate</h4>
-                    <p className="text-sm text-slate-400">Menggunakan AI untuk memprediksi over-budget dan mencegah kebocoran dana proyek sebelum terjadi.</p>
+                    <p className="text-sm text-slate-400">Menggunakan AI untuk memprediksi, menganalisa, prosesing  data.</p>
                 </div>
             </div>
         </div>
