@@ -56,7 +56,7 @@ export default function Home() {
           </div>
           <div className="flex items-center gap-4">
              <Link href="/auth" className="text-xs font-bold hover:text-white transition-colors">LOGIN</Link>
-             <Link href="/calculator" className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:bg-slate-200 transition-all flex items-center gap-2">TRY DEMO <ArrowRight className="w-3 h-3" /></Link>
+             <Link href="/calculator" className="bg-white text-black px-5 py-2 rounded-full text-xs font-bold hover:bg-slate-200 transition-all flex items-center gap-2">LOOK DEMO <ArrowRight className="w-3 h-3" /></Link>
           </div>
         </div>
       </nav>
