@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "ConTech Labs - Aplikasi Konstruksi Digital",
     description: "Hitung RAB dan Kelola Proyek dalam satu Dashboard.",
-    images: ['https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/dashboard%20estimator.png'], // Gambar yang akan muncul saat link disebar di WA
+    images: ['https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/front-page.png'], // Gambar yang akan muncul saat link disebar di WA
   }
 };
 
