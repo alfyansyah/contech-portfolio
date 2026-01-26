@@ -8,8 +8,18 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "ConTech Labs | Digital Construction Solutions",
-  description: "Jasa pembuatan Web App dan Sistem Otomatisasi khusus Konstruksi.",
+  title: {
+    default: "ConTech Labs | Aplikasi RAB & Manajemen Konstruksi Digital",
+    template: "%s | ConTech Labs"
+  },
+  description: "Software kontraktor Indonesia untuk hitung RAB otomatis, manajemen proyek, dan laporan harian. Dilengkapi fitur White Label PDF dan Analisa Harga Satuan (AHSP).",
+  keywords: ["Aplikasi RAB", "Software Konstruksi", "Hitung Beton Otomatis", "SaaS Konstruksi Indonesia", "Manajemen Proyek Sipil"],
+  authors: [{ name: "Alfyansyah" }],
+  openGraph: {
+    title: "ConTech Labs - Aplikasi Konstruksi Digital",
+    description: "Hitung RAB dan Kelola Proyek dalam satu Dashboard.",
+    images: ['https://wsubscnhhabhtubdorhd.supabase.co/storage/v1/object/public/logos/dashboard%20estimator.png'], // Gambar yang akan muncul saat link disebar di WA
+  }
 };
 
 export default function RootLayout({
