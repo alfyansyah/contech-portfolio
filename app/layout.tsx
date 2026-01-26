@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     template: "%s | ConTech Labs"
   },
   description: "Software kontraktor Indonesia untuk hitung RAB otomatis, manajemen proyek, dan laporan harian. Dilengkapi fitur White Label PDF dan Analisa Harga Satuan (AHSP).",
-  keywords: ["Aplikasi RAB", "Software Konstruksi", "Hitung Beton Otomatis", "SaaS Konstruksi Indonesia", "Manajemen Proyek Sipil"],
+  keywords: ["automation ai", "Aplikasi RAB", "Software Konstruksi", "Hitung Beton Otomatis", "SaaS Konstruksi Indonesia", "Manajemen Proyek Sipil", "Webapp"],
   authors: [{ name: "Alfyansyah" }],
   openGraph: {
     title: "ConTech Labs - Aplikasi Konstruksi Digital",
